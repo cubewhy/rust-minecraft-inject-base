@@ -1,0 +1,15 @@
+[package]
+name = "injector"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+bytes = "1.10.1"
+clap = { version = "4.5.43", features = ["derive"] }
+dll-syringe = "0.17.0"
+zip = "4.3.0"
+
+[build-dependencies]
+winres = "0.1.12"
+project-root = "0.2.2"
