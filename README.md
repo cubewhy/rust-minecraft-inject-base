@@ -3,7 +3,6 @@
 ## Roadmap
 
 - [ ] Support inject resources
-- [ ] Fix call entrypoint
 
 ## Building
 
