@@ -46,7 +46,7 @@ fn main() -> anyhow::Result<()> {
     install_tweak(&syringe, injected_payload)?;
 
     // eject the payload from the target (optional)
-    syringe.eject(injected_payload).unwrap();
+    // syringe.eject(injected_payload)?;
 
     Ok(())
 }
