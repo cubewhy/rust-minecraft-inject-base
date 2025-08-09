@@ -62,9 +62,9 @@ pub extern "C" fn install_hook() {
 
 unsafe extern "system" fn hooked_ngl_clear_wrapper(
     env: *mut RawJNIEnv,
-    jclass: jclass,
-    var0: jint,
-    var1: jlong,
+    _jclass: jclass,
+    _var0: jint,
+    _var1: jlong,
 ) {
     println!("reached hooked_ngl_clear_wrapper (before conv)");
     let typed_env = unsafe { JNIEnv::from_raw(env).unwrap() };
@@ -92,6 +92,6 @@ unsafe fn main_hook_logic(mut env: JNIEnv) {
 
     match unsafe { load_tweaks(&mut env) } {
         Ok(_) => println!("Success loaded tweaks"),
-        Err(_) => eprintln!("Failed to load tweaks"),
+        Err(e) => eprintln!("Failed to load tweaks, reason is {e}"),
     };
 }

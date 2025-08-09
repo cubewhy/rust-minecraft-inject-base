@@ -1,9 +1,10 @@
 use anyhow::anyhow;
-use jni::JNIEnv;
+use jni::{JNIEnv, objects::JValue};
 use std::ptr;
 
 use crate::{
-    CACHED_CLASSES, ENTRY_POINT_CLASS, ENTRY_POINT_FUNCTION_NAME, utils::load_class_bytes,
+    CACHED_CLASSES, ENTRY_POINT_ARGS, ENTRY_POINT_CLASS, ENTRY_POINT_FUNCTION_NAME,
+    utils::load_class_bytes,
 };
 
 pub unsafe fn load_tweaks(env: &mut JNIEnv) -> anyhow::Result<()> {
@@ -48,27 +49,26 @@ pub unsafe fn load_tweaks(env: &mut JNIEnv) -> anyhow::Result<()> {
     };
     // call the entry
 
-    // let entry_arg = unsafe {
-    //     (*ptr::addr_of!(ENTRY_POINT_ARGS))
-    //         .get()
-    //         .unwrap()
-    //         .lock()
-    //         .unwrap()
-    //         .to_string()
-    // };
+    let entry_arg = unsafe {
+        (*ptr::addr_of!(ENTRY_POINT_ARGS))
+            .get()
+            .unwrap()
+            .lock()
+            .unwrap()
+            .to_string()
+    };
 
     println!("Call the entry {entry_class_name}.{entry_method_name}");
     let jvm = env.get_java_vm()?;
     let mut guard = jvm.attach_current_thread().unwrap();
 
-    // let entry_arg = guard.new_string(entry_arg.as_str())?;
+    let entry_arg = guard.new_string(entry_arg.as_str())?;
 
     guard.call_static_method(
         tweaker_entry,
         entry_method_name,
-        "()V",
-        // &[JValue::Object(entry_arg.into())],
-        &[],
+        "(Ljava/lang/String;)V",
+        &[JValue::Object(&entry_arg.into())],
     )?;
 
     Ok(())

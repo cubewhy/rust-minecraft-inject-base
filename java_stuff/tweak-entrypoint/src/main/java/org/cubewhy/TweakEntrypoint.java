@@ -4,7 +4,7 @@ import javax.swing.*;
 
 @SuppressWarnings("unused")
 public class TweakEntrypoint {
-    public static void init() {
-        System.out.println("Hello world");
+    public static void init(String arg) {
+        System.out.println("Hello world " + arg);
     }
 }
