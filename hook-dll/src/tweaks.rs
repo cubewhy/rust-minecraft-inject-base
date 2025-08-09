@@ -8,6 +8,10 @@ use crate::{
 };
 
 pub unsafe fn load_tweaks(env: &mut JNIEnv) -> anyhow::Result<()> {
+    // get the jvm
+    let jvm = env.get_java_vm()?;
+    let mut guard = jvm.attach_current_thread().unwrap();
+
     let cached_classes = unsafe {
         (*ptr::addr_of!(CACHED_CLASSES))
             .get()
@@ -19,9 +23,10 @@ pub unsafe fn load_tweaks(env: &mut JNIEnv) -> anyhow::Result<()> {
     println!("Injecting classes into VM");
     // load class into classloader
     for (class_name, bytes) in cached_classes.iter() {
+        // TODO: only define class if it not found in the classloader
         // load the class
         println!("Inject class {class_name} ({}bytes)", bytes.len());
-        unsafe { load_class_bytes(env, class_name, bytes) }?;
+        unsafe { load_class_bytes(&mut guard, class_name, bytes) }?;
     }
 
     let entry_class_name = unsafe {
@@ -43,7 +48,7 @@ pub unsafe fn load_tweaks(env: &mut JNIEnv) -> anyhow::Result<()> {
     };
 
     // find tweaker entrypoint
-    let Ok(tweaker_entry) = env.find_class(&entry_class_name) else {
+    let Ok(tweaker_entry) = guard.find_class(&entry_class_name) else {
         eprintln!("Failed to load entry class {entry_class_name}");
         return Err(anyhow!("Failed to load entry class"));
     };
@@ -59,8 +64,6 @@ pub unsafe fn load_tweaks(env: &mut JNIEnv) -> anyhow::Result<()> {
     };
 
     println!("Call the entry {entry_class_name}.{entry_method_name}");
-    let jvm = env.get_java_vm()?;
-    let mut guard = jvm.attach_current_thread().unwrap();
 
     let entry_arg = guard.new_string(entry_arg.as_str())?;
 

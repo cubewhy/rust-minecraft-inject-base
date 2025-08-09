@@ -1,9 +1,9 @@
-use jni::{JNIEnv, objects::JClass};
+use jni::{AttachGuard, objects::JClass};
 
 /// # Safety
 /// This function is unsafe because it deals with raw JNI pointers and operations.
 pub unsafe fn load_class_bytes<'a>(
-    jni: &'a mut JNIEnv,
+    jni: &'a mut AttachGuard,
     class_name: &str,
     class_bytes: &[u8],
 ) -> jni::errors::Result<JClass<'a>> {
