@@ -19,6 +19,10 @@ repositories {
 dependencies {
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(17)
+}
+
 tasks.jar {
     dependsOn("shadowJar")
 
@@ -26,7 +30,6 @@ tasks.jar {
     archiveVersion.set("")
     manifest {
         attributes(
-            "Premain-Class" to "org.cubewhy.celestial.debugger.agent.BrowserDebuggerAgent",
             "Can-Redefine-Classes" to "true",
             "Can-Retransform-Classes" to "true"
         )
@@ -46,5 +49,4 @@ tasks.shadowJar {
     exclude("META-INF/versions/**")
 
     exclude("org/junit/**")
-
 }

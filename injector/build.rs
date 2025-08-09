@@ -35,22 +35,55 @@ fn build_entrypoint() {
         .join("java_stuff")
         .join("tweak-entrypoint");
 
+    let bump_project_root = project_root::get_project_root()
+        .unwrap()
+        .join("java_stuff")
+        .join("class-version-bumper");
+
     println!(
         "cargo::rerun-if-changed={}",
         entrypoint_project_root.to_string_lossy()
     );
 
-    let gradle_script = entrypoint_project_root.join(gradle_script_name);
+    let entrypoint_gradle_script = entrypoint_project_root.join(gradle_script_name);
 
     // call gradle to build jar
-    let mut command = process::Command::new(gradle_script);
-    command.arg("build").current_dir(&entrypoint_project_root);
+    let mut build_command = process::Command::new(entrypoint_gradle_script);
+    build_command
+        .arg("build")
+        .current_dir(&entrypoint_project_root);
 
     let jar_path = entrypoint_project_root
         .join("build")
         .join("libs")
         .join("tweak-entrypoint.jar");
 
-    command.spawn().unwrap().wait().unwrap();
-    println!("cargo:rustc-env=JAR_PATH={}", jar_path.to_string_lossy());
+    build_command.spawn().unwrap().wait().unwrap();
+
+    // bump class file version
+    let bumped_jar_path = entrypoint_project_root
+        .join("build")
+        .join("libs")
+        .join("tweak-entrypoint-bumped.jar");
+
+    let bump_gradle_script = bump_project_root.join(gradle_script_name);
+
+    // call gradle to bump jar
+    let mut bump_command = process::Command::new(bump_gradle_script);
+    bump_command
+        .arg("run")
+        .arg("--args")
+        .arg(format!(
+            "\"{}\" \"{}\"",
+            jar_path.to_string_lossy(),
+            bumped_jar_path.to_string_lossy()
+        ))
+        .current_dir(&bump_project_root);
+
+    bump_command.spawn().unwrap().wait().unwrap();
+
+    println!(
+        "cargo:rustc-env=JAR_PATH={}",
+        bumped_jar_path.to_string_lossy()
+    );
 }

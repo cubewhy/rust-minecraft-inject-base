@@ -19,6 +19,5 @@ pub unsafe fn load_class_bytes<'a>(
             &[],
         )?
         .l()?;
-
     jni.define_class(class_name, &class_loader_obj, class_bytes)
 }

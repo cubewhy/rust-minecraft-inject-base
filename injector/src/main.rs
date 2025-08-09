@@ -1,5 +1,6 @@
 #![feature(trim_prefix_suffix)]
 use std::{
+    cmp::Ordering,
     io::{Cursor, Read},
     process,
 };
@@ -95,10 +96,20 @@ fn cache_classes(
     // load the jar
     let jar_bytes: Bytes = Bytes::from_static(include_bytes!(env!("JAR_PATH")));
 
-    // TODO: parse the jar
+    // parse the jar
     let mut jar_archive = zip::ZipArchive::new(Cursor::new(jar_bytes))?;
 
-    let file_names: Vec<_> = jar_archive.file_names().map(|s| s.to_string()).collect();
+    let mut file_names: Vec<_> = jar_archive.file_names().map(|s| s.to_string()).collect();
+    // nested classes should be loaded first
+    file_names.sort_by(|item1, item2| {
+        if item1.contains("$") && !item2.contains("$") {
+            Ordering::Less
+        } else if !item1.contains("$") && item2.contains("$") {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    });
     for file_name in file_names {
         let mut entry = jar_archive.by_name(&file_name)?;
         if entry.is_dir() || !file_name.ends_with(".class") {
